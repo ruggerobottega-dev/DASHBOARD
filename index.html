@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROGETTI & SAL 2026</title>
+    <style>
+        /* STILI GRAFICI (CSS): Layout moderno e reattivo per smartphone e PC */
+        :root {
+            --primary-color: #1b365d;
+            --accent-color: #008080;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 20px;
+            text-align: center;
+            margin-top: 0;
+            border-bottom: 2px solid #eef2f5;
+            padding-bottom: 12px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #444;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            font-size: 15px;
+            border-radius: 8px;
+            border: 1px solid #cccccc;
+            margin-bottom: 20px;
+            background-color: #ffffff;
+            color: #333;
+        }
+
+        .project-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .project-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            border-bottom: 1px solid #cbd5e1;
+            padding-bottom: 5px;
+        }
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .task-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .sal-value {
+            font-weight: bold;
+            color: var(--accent-color);
+            font-size: 14px;
+        }
+
+        .progress-bg {
+            background-color: #e2e8f0;
+            border-radius: 4px;
+            height: 10px;
+            width: 100%;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            background-color: var(--accent-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .sal-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .sal-control input[type="range"] {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>PROGETTI & SAL 2026</h1>
+
+    <!-- SELEZIONE DEL PROGETTO / BRAND -->
+    <label for="projectSelect">Seleziona Progetto:</label>
+    <select id="projectSelect" onchange="renderProject()"></select>
+
+    <!-- AREA VISUALIZZAZIONE TASK E SAL -->
+    <div id="projectArea" class="project-card"></div>
+</div>
+
+<script>
+    /* DATABASE DEI PROGETTI E DELLE RELATIVE TASK 
+       Puoi personalizzare o aggiungere nuovi progetti in questa sezione! */
+    const defaultData = {
+        "Eataly": [
+            { id: 1, name: "Stipula contratti fornitori Food", progress: 80 },
+            { id: 2, name: "Verifica schede tecniche di prodotto", progress: 50 },
+            { id: 3, name: "Definizione spese di trasporto", progress: 30 }
+        ],
+        "Burger King": [
+            { id: 4, name: "Rinnovo accordi quadro 2026", progress: 90 },
+            { id: 5, name: "Verifica documentazione Antimafia", progress: 65 }
+        ],
+        "Motta Bar Schiphol": [
+            { id: 6, name: "Piano cantieri e allestimento", progress: 25 },
+            { id: 7, name: "Qualifica nuovi fornitori locali", progress: 40 }
+        ]
+    };
+
+    // Recupera i dati salvati nel browser oppure carica quelli predefiniti
+    let projectsData = JSON.parse(localStorage.getItem('sal2026_brands_data')) || defaultData;
+
+    const projectSelect = document.getElementById('projectSelect');
+    const projectArea = document.getElementById('projectArea');
+
+    // Inizializzazione della pagina
+    document.addEventListener('DOMContentLoaded', () => {
+        initSelect();
+        renderProject();
+    });
+
+    // Popola il menu a tendina con la lista dei progetti
+    function initSelect() {
+        projectSelect.innerHTML = "";
+        for (let projectName in projectsData) {
+            let option = document.createElement('option');
+            option.value = projectName;
+            option.textContent = projectName;
+            projectSelect.appendChild(option);
+        }
+    }
+
+    // Disegna a schermo le task del progetto selezionato
+    function renderProject() {
+        const selectedProject = projectSelect.value;
+        const tasks = projectsData[selectedProject] || [];
+
+        let html = `<div class="project-title">${selectedProject}</div>`;
+
+        if (tasks.length === 0) {
+            html += `<p style="font-size:13px; color:#777;">Nessuna task presente per questo progetto.</p>`;
+        } else {
+            tasks.forEach(task => {
+                html += `
+                    <div class="task-card">
+                        <div class="task-header">
+                            <span class="task-name">${task.name}</span>
+                            <span class="sal-value" id="val-${task.id}">${task.progress}%</span>
+                        </div>
+                        <div class="progress-bg">
+                            <div class="progress-fill" id="bar-${task.id}" style="width: ${task.progress}%;"></div>
+                        </div>
+                        <div class="sal-control">
+                            <span>Modifica SAL:</span>
+                            <input type="range" min="0" max="100" value="${task.progress}" 
+                                   oninput="updateSAL('${selectedProject}', ${task.id}, this.value)">
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        projectArea.innerHTML = html;
+    }
+
+    // Aggiorna la percentuale SAL sia visivamente che nella memoria locale
+    function updateSAL(projectName, taskId, newValue) {
+        // 1. Aggiorna il valore numerico e la barra colorata in tempo reale
+        document.getElementById(`val-${taskId}`).textContent = newValue + '%';
+        document.getElementById(`bar-${taskId}`).style.width = newValue + '%';
+
+        // 2. Salva la modifica nell'oggetto data
+        const task = projectsData[projectName].find(t => t.id === taskId);
+        if (task) {
+            task.progress = parseInt(newValue);
+            // 3. Salva persistentemente nel browser
+            localStorage.setItem('sal2026_brands_data', JSON.stringify(projectsData));
+        }
+    }
+</script>
+
+</body>
+</html>
