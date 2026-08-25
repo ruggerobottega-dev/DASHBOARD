@@ -4,8 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PROGETTI & SAL 2026</title>
+    
+    <!-- COLLEGAMENTO AL MANIFEST PER TRASFORMARLA IN UN'APP VERA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1b365d">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
     <style>
-        /* STILI GRAFICI (CSS): Layout moderno e reattivo per smartphone e PC */
+        /* STILI GRAFICI (CSS): Layout reattivo per PC e Mobile */
         :root {
             --primary-color: #1b365d;
             --accent-color: #008080;
@@ -136,17 +143,16 @@
 <div class="container">
     <h1>PROGETTI & SAL 2026</h1>
 
-    <!-- SELEZIONE DEL PROGETTO / BRAND -->
+    <!-- SELEZIONE PROGETTO -->
     <label for="projectSelect">Seleziona Progetto:</label>
     <select id="projectSelect" onchange="renderProject()"></select>
 
-    <!-- AREA VISUALIZZAZIONE TASK E SAL -->
+    <!-- AREA TASK E SAL -->
     <div id="projectArea" class="project-card"></div>
 </div>
 
 <script>
-    /* DATABASE DEI PROGETTI E DELLE RELATIVE TASK 
-       Puoi personalizzare o aggiungere nuovi progetti in questa sezione! */
+    /* STRUTTURA DATI PROGETTI E TASK */
     const defaultData = {
         "Eataly": [
             { id: 1, name: "Stipula contratti fornitori Food", progress: 80 },
@@ -163,19 +169,17 @@
         ]
     };
 
-    // Recupera i dati salvati nel browser oppure carica quelli predefiniti
-    let projectsData = JSON.parse(localStorage.getItem('sal2026_brands_data')) || defaultData;
+    // Lettura dei dati salvati in memoria o caricamento dati predefiniti
+    let projectsData = JSON.parse(localStorage.getItem('sal2026_final_data')) || defaultData;
 
     const projectSelect = document.getElementById('projectSelect');
     const projectArea = document.getElementById('projectArea');
 
-    // Inizializzazione della pagina
     document.addEventListener('DOMContentLoaded', () => {
         initSelect();
         renderProject();
     });
 
-    // Popola il menu a tendina con la lista dei progetti
     function initSelect() {
         projectSelect.innerHTML = "";
         for (let projectName in projectsData) {
@@ -186,7 +190,6 @@
         }
     }
 
-    // Disegna a schermo le task del progetto selezionato
     function renderProject() {
         const selectedProject = projectSelect.value;
         const tasks = projectsData[selectedProject] || [];
@@ -219,19 +222,29 @@
         projectArea.innerHTML = html;
     }
 
-    // Aggiorna la percentuale SAL sia visivamente che nella memoria locale
     function updateSAL(projectName, taskId, newValue) {
-        // 1. Aggiorna il valore numerico e la barra colorata in tempo reale
         document.getElementById(`val-${taskId}`).textContent = newValue + '%';
         document.getElementById(`bar-${taskId}`).style.width = newValue + '%';
 
-        // 2. Salva la modifica nell'oggetto data
         const task = projectsData[projectName].find(t => t.id === taskId);
         if (task) {
             task.progress = parseInt(newValue);
-            // 3. Salva persistentemente nel browser
-            localStorage.setItem('sal2026_brands_data', JSON.stringify(projectsData));
+            localStorage.setItem('sal2026_final_data', JSON.stringify(projectsData));
         }
+    }
+
+    // REGISTRAZIONE SERVICE WORKER AUTOMATICO PER ABILITARE L'INSTALLAZIONE SU ANDROID
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            const swCode = `
+                self.addEventListener('install', e => e.waitUntil(self.skipWaiting()));
+                self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+                self.addEventListener('fetch', e => e.respondWith(fetch(e.request)));
+            `;
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const blobURL = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(blobURL).catch(() => {});
+        });
     }
 </script>
 
